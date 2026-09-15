@@ -2,6 +2,9 @@
   "version": 1,
   "updated": "2026-09-15",
   "proxies": [
-    "https://gh-proxy.com/"
+    "https://gh-proxy.com/",
+    "https://ghproxy.net/",
+    "https://githubproxy.cc/",
+    "https://gitproxy.dev/"
   ]
 }
