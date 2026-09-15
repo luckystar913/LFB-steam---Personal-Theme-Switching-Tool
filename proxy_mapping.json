@@ -4,7 +4,6 @@
   "proxies": [
     "https://gh-proxy.com/",
     "https://ghproxy.net/",
-    "https://githubproxy.cc/",
-    "https://gitproxy.dev/"
+    "https://githubproxy.cc/"
   ]
 }
