@@ -3,12 +3,12 @@
   "updated": "2026-09-16",
   "themes": [
     {
-      "name": "Adwaita",
-      "description": "GNOME 风格主题，冷色系，支持库界面和设置页。",
+      "name": "Adwaita（内测版主题测试，不是开放主题。如果您看见可以忽略。）",
+      "description": "这是一行测试文本。占位占位占位占位占位占位占位占位占位占位占位占位。",
       "author": "luckystar913",
-      "version": "1.0.0",
-      "download": "https://catbox.moe/xxxxx/adwaita.zip",
-      "preview": "https://i.imgur.com/xxxxx.jpg",
+      "version": "0.0.1",
+      "download": "http://localhost:63634/LFB-steam-皮肤修改器测试皮肤.zip",
+      "preview": "https://picui.ogmua.cn/s1/20260916/270fa45c46949b6b1ce72cd1e364671f.png",
       "readme": "完整的 Adwaita 风格移植。\n\n特点：\n- 库界面卡片圆角\n- 侧边栏冷色高亮\n- 设置页统一配色\n\n推荐搭配亮色主题使用。"
     }
   ]
