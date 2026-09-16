@@ -3,138 +3,10 @@
   "updated": "2026-09-16",
   "announcements": [
     {
-      "id": "2026-09-15-001",
-      "date": "2026-09-15",
-      "title": "LFB 项目启动",
-      "body": "项目初始化。确定技术路线：不碰 Steam 客户端本体，只用 CDP (Chrome DevTools Protocol) 通过 Steam 自带的 -cef-enable-debugging 调试端口，把 CSS/JS 注入到 Steam 的浏览器沙盒里。\n\n参考项目：SFP (Steam Friends Patcher) 的皮肤格式、Millennium 的 Hook 思路。\n\n初始目录结构：lfb.py / cdp_client.py / theme_loader.py / config.py / logger.py。",
-      "type": "info",
-      "link": ""
-    },
-    {
-      "id": "2026-09-15-002",
-      "date": "2026-09-15",
-      "title": "CDP 最小闭环跑通",
-      "body": "第一版 sfp_test.py：\n\n· 用 requests 拿 localhost:8080/json/version\n· websockets 连上 CDP\n· 列 target、attach、Runtime.evaluate\n· 注入 body { background: #ff00ff !important; }\n\n商店页背景成功变洋红，核心链路 100% 通。",
-      "type": "success",
-      "link": ""
-    },
-    {
-      "id": "2026-09-15-003",
-      "date": "2026-09-15",
-      "title": "CDP 转义 Bug 修复（关键）",
-      "body": "注入 Adwaita 主题（52 万字符 CSS）时报错：\nSyntaxError: Unexpected identifier 'steamui'\n\n根因：CSS 里出现了反引号或 ${，把 JS 模板字符串撕开了，整段注入压根没执行。\n\n修复：escape_for_template_literal()，按顺序转义 \\\\、`、${。\n\n修复后 Adwaita 主题完整注入，界面变好看。",
-      "type": "error",
-      "link": ""
-    },
-    {
-      "id": "2026-09-15-004",
-      "date": "2026-09-15",
-      "title": "主题系统：skin.json 驱动",
-      "body": "主题格式确定：\n\n· 每个主题一个目录，含 skin.json\n· skin.json 里 UseDefaultPatches + Patches 数组\n· 每条 Patches 含 MatchRegexString / TargetCss / TargetJs\n· CSS 用 @import 递归展开（load_css_recursive）\n· 主题名 = zip 文件名\n\n兼容 SFP 的字段命名（MatchRegexString / TargetCss / TargetJs）。",
-      "type": "info",
-      "link": ""
-    },
-    {
-      "id": "2026-09-15-005",
-      "date": "2026-09-15",
-      "title": "UI 框架：可插拔主题包",
-      "body": "UI 也做成可插拔包：\n\ngui/\n├── base.py          BaseUI + EngineBridge\n├── loader.py        按 manifest.json 加载 UI 包\n└── themes/default/  默认 UI（三栏布局）\n\n引擎和 UI 通过 EngineBridge 解耦，UI 只调 bridge，不直接碰 CDP。",
-      "type": "info",
-      "link": ""
-    },
-    {
-      "id": "2026-09-15-006",
-      "date": "2026-09-15",
-      "title": "第一版 UI：三栏布局",
-      "body": "默认 UI 上线：\n\n· 左：导航（主页 / 主题 / 图片工具 / 设置 / 连接 / 日志 / 关于）\n· 中：QStackedWidget 内容区\n· 右：注入控制（连接状态 / 主题下拉 / 启动停止按钮 / 信息）\n· 底：状态栏\n\n支持暗色 / 亮色 / 跟随系统。",
-      "type": "success",
-      "link": ""
-    },
-    {
-      "id": "2026-09-15-007",
-      "date": "2026-09-15",
-      "title": "远程配置 + 主页公告",
-      "body": "新增网络层 net.py：\n\n· 直连优先，失败后用代理列表\n· 用 ssl.create_default_context() + HTTPAdapter 走系统证书，不用 certifi\n\n新增 remote_config.py：\n· 拉 proxy_mapping.json（代理列表）\n· 拉 announcements.json（公告）\n· 缓存到 data/ 目录\n\n主页上线：公告卡片列表，点击弹详情窗口。",
-      "type": "info",
-      "link": ""
-    },
-    {
-      "id": "2026-09-15-008",
-      "date": "2026-09-15",
-      "title": "无边框窗口 + 自定义标题栏",
-      "body": "去掉系统标题栏（FramelessWindowHint），自定义 TitleBar：\n\n· Logo 圆点 + LFB 文字\n· 拖拽移动窗口\n· 最小化 / 最大化 / 关闭按钮\n· 双击标题栏最大化\n\n最大化时让出任务栏（changeEvent 里调 setGeometry）。",
-      "type": "info",
-      "link": ""
-    },
-    {
-      "id": "2026-09-15-009",
-      "date": "2026-09-15",
-      "title": "自定义主按钮颜色",
-      "body": "config.json 加 accent_color 字段，默认 #b73c3c（红）。\n\n联动范围：\n· 启动注入按钮\n· 复选框选中色\n· 标题栏 Logo 圆点 + 文字\n· 公告卡片标题\n· 弹窗标题\n· 导航选中项文字\n· 表格选中项文字\n· 输入框聚焦边框\n· 进度条\n\n设置页可选预设色 + 取色器。",
-      "type": "success",
-      "link": ""
-    },
-    {
-      "id": "2026-09-15-010",
-      "date": "2026-09-15",
-      "title": "窗口动画 + 页面切换动画",
-      "body": "· 窗口启动淡入（200ms，OutCubic）\n· 页面切换淡入（150ms）\n· 托盘图标跟随 accent_color\n· 设置页底部按钮栏常驻\n\nWindows 11 圆角（DwmSetWindowAttribute，可配置 rounded_corners）。",
-      "type": "info",
-      "link": ""
-    },
-    {
-      "id": "2026-09-15-011",
-      "date": "2026-09-15",
-      "title": "配置回滚 Bug 修复",
-      "body": "用户设置偶尔被回滚到默认值。\n\n根因：save_config() 全量覆盖写，旧 cfg 会把用户新改的字段冲掉。\n\n修复：改成「读-合并-写」——先读磁盘现有配置，用传入的 cfg 覆盖已有字段，再写回。",
-      "type": "error",
-      "link": ""
-    },
-    {
-      "id": "2026-09-16-001",
+      "id": "2026-09-16-008",
       "date": "2026-09-16",
-      "title": "在线皮肤库上线",
-      "body": "主题页新增「商店」Tab：\n\n· 从 GitHub 拉 themes_index.json\n· 皮肤卡片：预览图 + 名称 + 作者 + 版本 + 简介\n· 点击卡片弹详情窗口（大图 + readme）\n· 下载 zip 并解压到 themes/\n· 支持 file:// / https:// / 相对路径 三种 download\n\nzip 解压逻辑：主题名 = zip 文件名（去扩展名），兼容一层顶级目录的情况。",
-      "type": "success",
-      "link": ""
-    },
-    {
-      "id": "2026-09-16-002",
-      "date": "2026-09-16",
-      "title": "下载列表 + 进度条",
-      "body": "主题页新增「下载列表」弹窗：\n\n· 每个下载任务独立一行\n· 进度条（下载 / 解压 / 完成 / 失败）\n· 「清空已完成」按钮\n· 商店 Tab 右上角显示任务数\n\nInstallWorker 信号：progress / stage / finished_signal。",
-      "type": "info",
-      "link": ""
-    },
-    {
-      "id": "2026-09-16-003",
-      "date": "2026-09-16",
-      "title": "主题页重构：商店 / 本地 双 Tab",
-      "body": "之前三块（本地主题 / 在线库 / 下载列表）硬挤一页，高度不够。\n\n改成 QTabWidget：\n· 商店 Tab：在线皮肤库（占满）+ 下载列表按钮\n· 本地 Tab：本地主题表格 + 工具条",
-      "type": "info",
-      "link": ""
-    },
-    {
-      "id": "2026-09-16-004",
-      "date": "2026-09-16",
-      "title": "工具页上线",
-      "body": "新增「工具」Tab：\n\n· 生成 Steam 桌面快捷方式（带 -cef-enable-debugging 参数）\n· 启用 / 移除 Steam 开机自启动\n· 启用 / 移除 LFB 开机自启动（打包模式指向 LFB.exe，源码模式指向 pythonw lfb.py）\n\n用 Windows Script Host 创建 .lnk，不依赖 pywin32。",
-      "type": "success",
-      "link": ""
-    },
-    {
-      "id": "2026-09-16-005",
-      "date": "2026-09-16",
-      "title": "连接失败自动提示重启",
-      "body": "启动注入时如果连不上 localhost:8080：\n\n· 引擎通过 on_connect_failed 回调通知 UI\n· 弹窗问用户「是否现在重启 Steam？」\n· 点是 → 自动 steam.exe -shutdown + 带调试参数重启\n\n引擎线程加了 _loop_ready（threading.Event）确保 loop 就绪后再提交协程。",
-      "type": "success",
-      "link": ""
-    },
-    {
-      "id": "2026-09-16-006",
-      "date": "2026-09-16",
-      "title": "窗口 / 托盘 / 任务栏图标统一",
-      "body": "app.ico（7 尺寸：16 / 24 / 32 / 48 / 64 / 128 / 256）设为：\n\n· exe 图标（PyInstaller spec 的 icon 字段）\n· QApplication.setWindowIcon\n· MainWindow.setWindowIcon\n· 托盘图标（QSystemTrayIcon）\n\n_load_app_icon() 兼容打包模式（exe 同目录）和源码模式（项目根目录）。",
+      "title": "内测版发布",
+      "body": "当前状态：\n\n· SFP 安全模式完整可用（不碰 Steam 客户端本体）\n· CDP 注入 + 主题系统 + 在线皮肤库 + 下载进度 + 工具页全部就绪\n· 单文件打包已通\n\n待办：\n· 高级模式（Millennium Hook，改动客户端文件）预留入口\n· 现代化 UI 引擎（Web UI）与 Windows 原生 API 双模式\n· 开源社区共建主题库\n\n测试环境：虚拟机 + 小号。",
       "type": "info",
       "link": ""
     },
@@ -147,10 +19,138 @@
       "link": ""
     },
     {
-      "id": "2026-09-16-008",
+      "id": "2026-09-16-006",
       "date": "2026-09-16",
-      "title": "内测版发布",
-      "body": "当前状态：\n\n· SFP 安全模式完整可用（不碰 Steam 客户端本体）\n· CDP 注入 + 主题系统 + 在线皮肤库 + 下载进度 + 工具页全部就绪\n· 单文件打包已通\n\n待办：\n· 高级模式（Millennium Hook，改动客户端文件）预留入口\n· 现代化 UI 引擎（Web UI）与 Windows 原生 API 双模式\n· 开源社区共建主题库\n\n测试环境：虚拟机 + 小号。",
+      "title": "窗口 / 托盘 / 任务栏图标统一",
+      "body": "app.ico（7 尺寸：16 / 24 / 32 / 48 / 64 / 128 / 256）设为：\n\n· exe 图标（PyInstaller spec 的 icon 字段）\n· QApplication.setWindowIcon\n· MainWindow.setWindowIcon\n· 托盘图标（QSystemTrayIcon）\n\n_load_app_icon() 兼容打包模式（exe 同目录）和源码模式（项目根目录）。",
+      "type": "info",
+      "link": ""
+    },
+    {
+      "id": "2026-09-16-005",
+      "date": "2026-09-16",
+      "title": "连接失败自动提示重启",
+      "body": "启动注入时如果连不上 localhost:8080：\n\n· 引擎通过 on_connect_failed 回调通知 UI\n· 弹窗问用户「是否现在重启 Steam？」\n· 点是 → 自动 steam.exe -shutdown + 带调试参数重启\n\n引擎线程加了 _loop_ready（threading.Event）确保 loop 就绪后再提交协程。",
+      "type": "success",
+      "link": ""
+    },
+    {
+      "id": "2026-09-16-004",
+      "date": "2026-09-16",
+      "title": "工具页上线",
+      "body": "新增「工具」Tab：\n\n· 生成 Steam 桌面快捷方式（带 -cef-enable-debugging 参数）\n· 启用 / 移除 Steam 开机自启动\n· 启用 / 移除 LFB 开机自启动（打包模式指向 LFB.exe，源码模式指向 pythonw lfb.py）\n\n用 Windows Script Host 创建 .lnk，不依赖 pywin32。",
+      "type": "success",
+      "link": ""
+    },
+    {
+      "id": "2026-09-16-003",
+      "date": "2026-09-16",
+      "title": "主题页重构：商店 / 本地 双 Tab",
+      "body": "之前三块（本地主题 / 在线库 / 下载列表）硬挤一页，高度不够。\n\n改成 QTabWidget：\n· 商店 Tab：在线皮肤库（占满）+ 下载列表按钮\n· 本地 Tab：本地主题表格 + 工具条",
+      "type": "info",
+      "link": ""
+    },
+    {
+      "id": "2026-09-16-002",
+      "date": "2026-09-16",
+      "title": "下载列表 + 进度条",
+      "body": "主题页新增「下载列表」弹窗：\n\n· 每个下载任务独立一行\n· 进度条（下载 / 解压 / 完成 / 失败）\n· 「清空已完成」按钮\n· 商店 Tab 右上角显示任务数\n\nInstallWorker 信号：progress / stage / finished_signal。",
+      "type": "info",
+      "link": ""
+    },
+    {
+      "id": "2026-09-16-001",
+      "date": "2026-09-16",
+      "title": "在线皮肤库上线",
+      "body": "主题页新增「商店」Tab：\n\n· 从 GitHub 拉 themes_index.json\n· 皮肤卡片：预览图 + 名称 + 作者 + 版本 + 简介\n· 点击卡片弹详情窗口（大图 + readme）\n· 下载 zip 并解压到 themes/\n· 支持 file:// / https:// / 相对路径 三种 download\n\nzip 解压逻辑：主题名 = zip 文件名（去扩展名），兼容一层顶级目录的情况。",
+      "type": "success",
+      "link": ""
+    },
+    {
+      "id": "2026-09-15-011",
+      "date": "2026-09-15",
+      "title": "配置回滚 Bug 修复",
+      "body": "用户设置偶尔被回滚到默认值。\n\n根因：save_config() 全量覆盖写，旧 cfg 会把用户新改的字段冲掉。\n\n修复：改成「读-合并-写」——先读磁盘现有配置，用传入的 cfg 覆盖已有字段，再写回。",
+      "type": "error",
+      "link": ""
+    },
+    {
+      "id": "2026-09-15-010",
+      "date": "2026-09-15",
+      "title": "窗口动画 + 页面切换动画",
+      "body": "· 窗口启动淡入（200ms，OutCubic）\n· 页面切换淡入（150ms）\n· 托盘图标跟随 accent_color\n· 设置页底部按钮栏常驻\n\nWindows 11 圆角（DwmSetWindowAttribute，可配置 rounded_corners）。",
+      "type": "info",
+      "link": ""
+    },
+    {
+      "id": "2026-09-15-009",
+      "date": "2026-09-15",
+      "title": "自定义主按钮颜色",
+      "body": "config.json 加 accent_color 字段，默认 #b73c3c（红）。\n\n联动范围：\n· 启动注入按钮\n· 复选框选中色\n· 标题栏 Logo 圆点 + 文字\n· 公告卡片标题\n· 弹窗标题\n· 导航选中项文字\n· 表格选中项文字\n· 输入框聚焦边框\n· 进度条\n\n设置页可选预设色 + 取色器。",
+      "type": "success",
+      "link": ""
+    },
+    {
+      "id": "2026-09-15-008",
+      "date": "2026-09-15",
+      "title": "无边框窗口 + 自定义标题栏",
+      "body": "去掉系统标题栏（FramelessWindowHint），自定义 TitleBar：\n\n· Logo 圆点 + LFB 文字\n· 拖拽移动窗口\n· 最小化 / 最大化 / 关闭按钮\n· 双击标题栏最大化\n\n最大化时让出任务栏（changeEvent 里调 setGeometry）。",
+      "type": "info",
+      "link": ""
+    },
+    {
+      "id": "2026-09-15-007",
+      "date": "2026-09-15",
+      "title": "远程配置 + 主页公告",
+      "body": "新增网络层 net.py：\n\n· 直连优先，失败后用代理列表\n· 用 ssl.create_default_context() + HTTPAdapter 走系统证书，不用 certifi\n\n新增 remote_config.py：\n· 拉 proxy_mapping.json（代理列表）\n· 拉 announcements.json（公告）\n· 缓存到 data/ 目录\n\n主页上线：公告卡片列表，点击弹详情窗口。",
+      "type": "info",
+      "link": ""
+    },
+    {
+      "id": "2026-09-15-006",
+      "date": "2026-09-15",
+      "title": "第一版 UI：三栏布局",
+      "body": "默认 UI 上线：\n\n· 左：导航（主页 / 主题 / 图片工具 / 设置 / 连接 / 日志 / 关于）\n· 中：QStackedWidget 内容区\n· 右：注入控制（连接状态 / 主题下拉 / 启动停止按钮 / 信息）\n· 底：状态栏\n\n支持暗色 / 亮色 / 跟随系统。",
+      "type": "success",
+      "link": ""
+    },
+    {
+      "id": "2026-09-15-005",
+      "date": "2026-09-15",
+      "title": "UI 框架：可插拔主题包",
+      "body": "UI 也做成可插拔包：\n\ngui/\n├── base.py          BaseUI + EngineBridge\n├── loader.py        按 manifest.json 加载 UI 包\n└── themes/default/  默认 UI（三栏布局）\n\n引擎和 UI 通过 EngineBridge 解耦，UI 只调 bridge，不直接碰 CDP。",
+      "type": "info",
+      "link": ""
+    },
+    {
+      "id": "2026-09-15-004",
+      "date": "2026-09-15",
+      "title": "主题系统：skin.json 驱动",
+      "body": "主题格式确定：\n\n· 每个主题一个目录，含 skin.json\n· skin.json 里 UseDefaultPatches + Patches 数组\n· 每条 Patches 含 MatchRegexString / TargetCss / TargetJs\n· CSS 用 @import 递归展开（load_css_recursive）\n· 主题名 = zip 文件名\n\n兼容 SFP 的字段命名（MatchRegexString / TargetCss / TargetJs）。",
+      "type": "info",
+      "link": ""
+    },
+    {
+      "id": "2026-09-15-003",
+      "date": "2026-09-15",
+      "title": "CDP 转义 Bug 修复（关键）",
+      "body": "注入 Adwaita 主题（52 万字符 CSS）时报错：\nSyntaxError: Unexpected identifier 'steamui'\n\n根因：CSS 里出现了反引号或 ${，把 JS 模板字符串撕开了，整段注入压根没执行。\n\n修复：escape_for_template_literal()，按顺序转义 \\\\、`、${。\n\n修复后 Adwaita 主题完整注入，界面变好看。",
+      "type": "error",
+      "link": ""
+    },
+    {
+      "id": "2026-09-15-002",
+      "date": "2026-09-15",
+      "title": "CDP 最小闭环跑通",
+      "body": "第一版 sfp_test.py：\n\n· 用 requests 拿 localhost:8080/json/version\n· websockets 连上 CDP\n· 列 target、attach、Runtime.evaluate\n· 注入 body { background: #ff00ff !important; }\n\n商店页背景成功变洋红，核心链路 100% 通。",
+      "type": "success",
+      "link": ""
+    },
+    {
+      "id": "2026-09-15-001",
+      "date": "2026-09-15",
+      "title": "LFB 项目启动",
+      "body": "项目初始化。确定技术路线：不碰 Steam 客户端本体，只用 CDP (Chrome DevTools Protocol) 通过 Steam 自带的 -cef-enable-debugging 调试端口，把 CSS/JS 注入到 Steam 的浏览器沙盒里。\n\n参考项目：SFP (Steam Friends Patcher) 的皮肤格式、Millennium 的 Hook 思路。\n\n初始目录结构：lfb.py / cdp_client.py / theme_loader.py / config.py / logger.py。",
       "type": "info",
       "link": ""
     }
